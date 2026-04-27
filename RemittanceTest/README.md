@@ -24,6 +24,7 @@
 5. **架構問答 (請直接回答於下方)**
    - 雖然本測試使用 In-Memory List 模擬資料庫，但在正式的 SQL Server 環境中，您會如何撰寫 T-SQL 或 Entity Framework Core 程式碼，來確保「多個使用者同時對同一筆資料按下取消」時，不會發生 Race Condition？
    - **您的回答：** (請在此作答...)
+	- 在 SQL Server 中，可以使用交易 (Transaction) 搭配鎖定 (Lock) 來確保資料一致性。在 Entity Framework Core 中使用 `DbContext` 的交易機制。
 
 ## 提交要求
 1. 請使用 GitHub Public Repository 提交。
