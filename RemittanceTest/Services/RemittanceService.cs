@@ -4,6 +4,12 @@ namespace RemittanceTest.Services
 {
     public class RemittanceService : IRemittanceService
     {
+        // 狀態常數定義
+        private const int STATUS_PROCESSING = 0;        // 處理中
+        private const int STATUS_IN_TRANSACTION = 1;    // 交易中
+        private const int STATUS_COMPLETED = 2;         // 已完成
+        private const int STATUS_CANCELLED = 9;         // 已取消
+
         // 模擬資料庫 (靜態變數確保跨 Request 資料一致)
         private static readonly List<Remittance> _db = new()
         {
@@ -17,9 +23,34 @@ namespace RemittanceTest.Services
 
         public (bool IsSuccess, string Message) CancelRemittance(int id)
         {
-            // TODO: 請在此處實作「取消」的商業邏輯與防併發檢核
+            lock (_lockObj)
+            {
+                var remittance = _db.FirstOrDefault(r => r.Id == id);
 
-            throw new NotImplementedException();
+                if (remittance == null)
+                {
+                    return (false, "找不到該筆匯款");
+                }
+
+                switch (remittance.Status)
+                {
+                    case STATUS_PROCESSING: // 處理中，可取消
+                        remittance.Status = STATUS_CANCELLED; // 更新狀態為已取消
+                        return (true, "取消成功");
+
+                    case STATUS_IN_TRANSACTION: // 交易中，不可取消
+                        return (false, "該筆匯款已完成，不可取消");
+
+                    case STATUS_COMPLETED: // 已完成，不可取消
+                        return (false, "該筆匯款已經完成，不可取消");
+
+                    case STATUS_CANCELLED: // 已取消
+                        return (false, "該筆匯款已經取消");
+
+                    default:
+                        return (false, "未知的匯款狀態");
+                }
+            }
         }
     }
 }
